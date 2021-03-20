@@ -14,6 +14,7 @@ class Download:  # загрузка основных компонентов иг
     def __init__(self, display_size):
         display = pygame.display.set_mode(display_size)
         self.path = os.getcwd()
+        print(self.path)
         self.AMO = {
             'default': {
                 'default': pygame.image.load(self.path+f'\img\spaceship\shape.png').convert_alpha(),
@@ -31,7 +32,8 @@ class Download:  # загрузка основных компонентов иг
             'buttons': {
                 'continue': pygame.image.load(self.path+r'\img\interface\Continue.png').convert_alpha(),
                 'exit': pygame.image.load(self.path+r'\img\interface\Quite.png').convert_alpha(),
-                'settings': pygame.image.load(self.path+r'\img\interface\Settings.png').convert_alpha()
+                'settings': pygame.image.load(self.path+r'\img\interface\Settings.png').convert_alpha(),
+                'restart': pygame.image.load(self.path+r'\img\interface\Restart.png').convert_alpha()
             }
         }
 
@@ -49,8 +51,19 @@ class AbstractMenu(pygame.sprite.Sprite):
 
         self.rect = self.menu_image.get_rect(
             center=(display_size[0]//2, display_size[1]//2))
+        self.font_size = 40
+        self.font_stile = pygame.font.Font(
+            os.getcwd()+r'\addone\karmafuture.ttf', self.font_size)
+        self.score_int = 0
+        self.score_text = self.font_stile.render(
+            f'Your score: {self.score_int}', False, (255, 255, 255))
 
-    def update(self, mouse):
+    def update(self, mouse, score):
+        if self.score_int != score:
+            self.score_int = score
+            self.score_text = self.font_stile.render(
+                f'Your score: {self.score_int}', False, (255, 255, 255))
+
         for button in self.buttons_list:
             if button.rect.collidepoint(mouse.get_pos()):
                 if mouse.get_pressed()[0]:
@@ -60,12 +73,15 @@ class AbstractMenu(pygame.sprite.Sprite):
             else:
                 button.hover = False
 
-    def draw(self, display):
+    def draw(self, display, score):
         display.blit(self.blur_font, (0, 0))
         display.blit(self.menu_image, self.rect)
 
         for button in self.buttons_list:
             button.draw(display)
+
+        display.blit(self.score_text, (self.rect.centerx*0.5,
+                                       self.rect.top+self.font_size))
 
 
 class PauseMenu(AbstractMenu):
@@ -74,57 +90,32 @@ class PauseMenu(AbstractMenu):
 
         self.buttons_list = [
             Button(button_images['continue'],
-                   self.rect.center, func['continue_']),
-            Button(button_images['exit'], (self.rect.centerx,
-                                           self.rect.centery+self.rect.height//3), func['exit_']),
-            Button(button_images['settings'], (self.rect.centerx,
-                                               self.rect.centery+self.rect.height//5.5), func['settings_'])
+                   (self.rect.centerx, self.rect.centery*.87), func['continue_']),
+
+            Button(button_images['settings'],
+                   (self.rect.centerx, self.rect.centery*1.12), func['settings_']),
+
+            Button(button_images['restart'],
+                   (self.rect.centerx, self.rect.centery*1.37), func['restart_']),
+
+            Button(button_images['exit'],
+                   (self.rect.centerx, self.rect.centery*1.62), func['exit_']),
+
         ]
+
+
 class DiedMune(AbstractMenu):
     def __init__(self, menu_images, button_images, display_size, **func):
         super().__init__(menu_images, display_size)
 
         self.buttons_list = [
-            Button(button_images['exit'], self.rect.center, func['restart_']),
+            Button(button_images['restart'],
+                   self.rect.center, func['restart_']),
             Button(button_images['settings'], (self.rect.centerx,
-                                               self.rect.centery+self.rect.height//5.5), func['settings_'])
+                                               self.rect.centery+self.rect.height//5.5), func['settings_']),
+            Button(button_images['exit'], (self.rect.centerx,
+                                           self.rect.centery+self.rect.height//3), func['exit_'])
         ]
-
-# class Menu(pygame.sprite.Sprite):
-#     def __init__(self, images, display_size, **functions):
-#         scale = (display_size[0]*0.68)/images[0].get_width()
-#         self.menu_image = pygame.transform.scale(images[0], (round(
-#             images[0].get_width()*scale), round(images[0].get_height()*scale)))
-
-#         self.blur_font = images[1]
-#         self.rect = self.menu_image.get_rect(
-#             center=(display_size[0]//2, display_size[1]//2))
-
-#         self.buttons_list = [
-#             Button(images[2]['continue'], self.rect.center,
-#                    functions['continue_']),
-#             Button(images[2]['quite'], (self.rect.centerx,
-#                                         self.rect.centery+self.rect.height//3), functions['quite']),
-#             Button(images[2]['settings'], (self.rect.centerx,
-#                                            self.rect.centery+self.rect.height//5.5), functions['settings'])
-#         ]
-
-#     def draw(self, display):
-#         display.blit(self.blur_font, (0, 0))
-#         display.blit(self.menu_image, self.rect)
-
-#         for button in self.buttons_list:
-#             button.draw(display)
-
-#     def update(self, mouse):
-#         for button in self.buttons_list:
-#             if button.rect.collidepoint(mouse.get_pos()):
-#                 if mouse.get_pressed()[0]:
-#                     button.run_function()
-#                 else:
-#                     button.hover = True
-#             else:
-#                 button.hover = False
 
 
 class Button(pygame.sprite.Sprite):
@@ -264,11 +255,11 @@ class Game(Download, FirstLevelCreator):
         self.Toolbar = Toolbar(
             self.interface['toolbar'], self.AMO, int(self.display_width//2), 1220)
         self.PauseMenu = PauseMenu(self.interface['menu2'], self.interface['buttons'], self.display_size,
-                                   exit_=self.exit_game, continue_=self.show_menu, settings_=self.settings)
-        self.DiedMenu = DiedMune(self.interface['menu2'], self.interface['buttons'], self.display_size, restart_=self.restart, settings_=self.settings)
-        
-        pygame.time.set_timer(pygame.USEREVENT, 1000)
+                                   exit_=self.exit_game, continue_=self.show_menu, settings_=self.settings, restart_=self.restart)
+        self.DiedMenu = DiedMune(self.interface['menu2'], self.interface['buttons'], self.display_size,
+                                 restart_=self.restart, settings_=self.settings, exit_=self.exit_game)
 
+        pygame.time.set_timer(pygame.USEREVENT, 1000)
 
     def restart(self):
         self.died_signal = False
@@ -293,6 +284,7 @@ class Game(Download, FirstLevelCreator):
 
         self.Score = Score(42)
 # -----------------------------------ОТРИСОКВКА И ОБНОВЛЕНИЕ-------------------------------------------------------
+
     def draw_interface(self):
         self.Score.draw(self.display, self.display_size)
         self.Toolbar.draw(self.display)
@@ -312,8 +304,11 @@ class Game(Download, FirstLevelCreator):
 
     def update_game_element(self):
         now = self.get_game_time
-
         self.player.update(now)
+
+        if self.player.XP <= 0:
+            self.show_menu()
+            self.died_signal = True
 
         for i in range(len(self.y_font)):
             if self.y_font[i] >= self.display_height:
@@ -389,16 +384,12 @@ class Game(Download, FirstLevelCreator):
                     # проверка коллизии с игроком
                     for player_rect in self.player.hitted_rects:
                         if player_rect.colliderect(hitted_rect):
-                            if isinstance(element, FlyingEnemy):
-                                self.player.hit(1)
+                            if isinstance(element, FlyingEnemy): #коллизмя игрока с вражеским кораблем
                                 self.player.rect.y += self.player.rect.height
+                                self.player.hit(1)
                             else:
-                                if not element.run_burst:
-                                    if self.player.hit(element.DAMAGE) <= 0:
-                                        self.show_menu()
-                                        self.died_signal = True
-
-                                        #self.exit_game()
+                                if not element.run_burst:# колизия игрока с любым другим объктом
+                                    self.player.hit(element.DAMAGE)
 
                                 element.run_burst = True
 
@@ -504,17 +495,20 @@ class Game(Download, FirstLevelCreator):
 
             else:
                 self.last_spawner_sleeped(
-                        pygame.time.get_ticks())
+                    pygame.time.get_ticks())
 
                 mouse_pos = pygame.mouse
 
                 if self.died_signal:
-                    self.DiedMenu.draw(self.display)
-                    self.DiedMenu.update(mouse_pos)
+                    self.DiedMenu.draw(
+                        self.display, int(self.Score.score_count))
+                    self.DiedMenu.update(
+                        mouse_pos, int(self.Score.score_count))
                 else:
-                    self.PauseMenu.draw(self.display)
-                    self.PauseMenu.update(mouse_pos)
-
+                    self.PauseMenu.draw(
+                        self.display, int(self.Score.score_count))
+                    self.PauseMenu.update(
+                        mouse_pos, int(self.Score.score_count))
 
             pygame.display.update()
             self.clock.tick(60)
