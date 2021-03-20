@@ -26,45 +26,29 @@ class Download:  # загрузка основных компонентов иг
         }
         self.interface = {
             'toolbar': [pygame.image.load(self.path+r'\img\interface\Toolbar\navigate'+str(i)+'.png').convert_alpha() for i in range(1, 6)],
+            'menu2': [pygame.image.load(self.path+r'\img\font\menu2.png').convert_alpha(), pygame.image.load(self.path+r'\img\font\font2.png').convert_alpha()],
+            'menu': [pygame.image.load(self.path+r'\img\font\menu.png').convert_alpha(), pygame.image.load(self.path+r'\img\font\font2.png').convert_alpha()],
+            'buttons': {
+                'continue': pygame.image.load(self.path+r'\img\interface\Continue.png').convert_alpha(),
+                'exit': pygame.image.load(self.path+r'\img\interface\Quite.png').convert_alpha(),
+                'settings': pygame.image.load(self.path+r'\img\interface\Settings.png').convert_alpha()
+            }
         }
 
-        self.font = {'font': pygame.image.load(self.path+r'\img\font\space2.png').convert_alpha(),
-                     'blurfont': pygame.image.load(self.path+r'\img\font\font2.png').convert_alpha(),
-                     'menu': pygame.image.load(self.path+r'\img\font\menu.png').convert_alpha(),
-                     'menu2': pygame.image.load(self.path+r'\img\font\menu2.png').convert_alpha(),
-                     'buttons': {
-                         'continue': pygame.image.load(self.path+r'\img\interface\Continue.png').convert_alpha(),
-                         'quite': pygame.image.load(self.path+r'\img\interface\Quite.png').convert_alpha(),
-                         'settings': pygame.image.load(self.path+r'\img\interface\Settings.png').convert_alpha()
-        }
-        }
+        self.font = pygame.image.load(
+            self.path+r'\img\font\space2.png').convert_alpha()
 
 
-class Menu(pygame.sprite.Sprite):
-    def __init__(self, images, display, display_size, **functions):
-        scale = (display_size[0]*0.68)/images[0].get_width()
-        self.menu_image = pygame.transform.scale(images[0], (round(
-            images[0].get_width()*scale), round(images[0].get_height()*scale)))
+class AbstractMenu(pygame.sprite.Sprite):
+    def __init__(self, menu_images, display_size):
+        scale = (display_size[0]*0.68)/menu_images[0].get_width()
+        self.menu_image = pygame.transform.scale(menu_images[0], (round(
+            menu_images[0].get_width()*scale), round(menu_images[0].get_height()*scale)))
+        self.blur_font = menu_images[1]
+        self.buttons_list = []
 
-        self.blur_font = images[1]
         self.rect = self.menu_image.get_rect(
             center=(display_size[0]//2, display_size[1]//2))
-
-        self.buttons_list = [
-            Button(images[2]['continue'], self.rect.center,
-                   functions['continue_']),
-            Button(images[2]['quite'], (self.rect.centerx,
-                                        self.rect.centery+self.rect.height//3), functions['quite']),
-            Button(images[2]['settings'], (self.rect.centerx,
-                                           self.rect.centery+self.rect.height//5.5), functions['settings'])
-        ]
-
-    def draw(self, display):
-        display.blit(self.blur_font, (0, 0))
-        display.blit(self.menu_image, self.rect)
-
-        for button in self.buttons_list:
-            button.draw(display)
 
     def update(self, mouse):
         for button in self.buttons_list:
@@ -75,6 +59,72 @@ class Menu(pygame.sprite.Sprite):
                     button.hover = True
             else:
                 button.hover = False
+
+    def draw(self, display):
+        display.blit(self.blur_font, (0, 0))
+        display.blit(self.menu_image, self.rect)
+
+        for button in self.buttons_list:
+            button.draw(display)
+
+
+class PauseMenu(AbstractMenu):
+    def __init__(self, menu_images, button_images, display_size, **func):
+        super().__init__(menu_images, display_size)
+
+        self.buttons_list = [
+            Button(button_images['continue'],
+                   self.rect.center, func['continue_']),
+            Button(button_images['exit'], (self.rect.centerx,
+                                           self.rect.centery+self.rect.height//3), func['exit_']),
+            Button(button_images['settings'], (self.rect.centerx,
+                                               self.rect.centery+self.rect.height//5.5), func['settings_'])
+        ]
+class DiedMune(AbstractMenu):
+    def __init__(self, menu_images, button_images, display_size, **func):
+        super().__init__(menu_images, display_size)
+
+        self.buttons_list = [
+            Button(button_images['exit'], self.rect.center, func['restart_']),
+            Button(button_images['settings'], (self.rect.centerx,
+                                               self.rect.centery+self.rect.height//5.5), func['settings_'])
+        ]
+
+# class Menu(pygame.sprite.Sprite):
+#     def __init__(self, images, display_size, **functions):
+#         scale = (display_size[0]*0.68)/images[0].get_width()
+#         self.menu_image = pygame.transform.scale(images[0], (round(
+#             images[0].get_width()*scale), round(images[0].get_height()*scale)))
+
+#         self.blur_font = images[1]
+#         self.rect = self.menu_image.get_rect(
+#             center=(display_size[0]//2, display_size[1]//2))
+
+#         self.buttons_list = [
+#             Button(images[2]['continue'], self.rect.center,
+#                    functions['continue_']),
+#             Button(images[2]['quite'], (self.rect.centerx,
+#                                         self.rect.centery+self.rect.height//3), functions['quite']),
+#             Button(images[2]['settings'], (self.rect.centerx,
+#                                            self.rect.centery+self.rect.height//5.5), functions['settings'])
+#         ]
+
+#     def draw(self, display):
+#         display.blit(self.blur_font, (0, 0))
+#         display.blit(self.menu_image, self.rect)
+
+#         for button in self.buttons_list:
+#             button.draw(display)
+
+#     def update(self, mouse):
+#         for button in self.buttons_list:
+#             if button.rect.collidepoint(mouse.get_pos()):
+#                 if mouse.get_pressed()[0]:
+#                     button.run_function()
+#                 else:
+#                     button.hover = True
+#             else:
+#                 button.hover = False
 
 
 class Button(pygame.sprite.Sprite):
@@ -183,19 +233,19 @@ class Game(Download, FirstLevelCreator):
         pygame.init()
         self.display_size = self.display_width, self.display_height = (
             display_width, display_height)
-        print(self.display_size)
 
         super().__init__(self.display_size)
 
         FirstLevelCreator.__init__(
             self, self.display_size, self.add_to_group, self.get_amount_objects)
 
-        self.y_font = [0, self.font['font'].get_height()*-1]
+        self.y_font = [0, self.font.get_height()*-1]
         self.display = pygame.display.set_mode(
             self.display_size)
         self.clock = pygame.time.Clock()
         self.__Run = True
         self.__show_menu_bool = False
+        self.died_signal = False
         self.last_sleep = 0
         self.elampsed_time = 0
 
@@ -213,11 +263,35 @@ class Game(Download, FirstLevelCreator):
 
         self.Toolbar = Toolbar(
             self.interface['toolbar'], self.AMO, int(self.display_width//2), 1220)
-        self.Menu = Menu(
-            (self.font['menu2'], self.font['blurfont'], self.font['buttons']), self.display, self.display_size, continue_=self.show_menu, settings=self.settings, quite=self.exit_game)
-
+        self.PauseMenu = PauseMenu(self.interface['menu2'], self.interface['buttons'], self.display_size,
+                                   exit_=self.exit_game, continue_=self.show_menu, settings_=self.settings)
+        self.DiedMenu = DiedMune(self.interface['menu2'], self.interface['buttons'], self.display_size, restart_=self.restart, settings_=self.settings)
+        
         pygame.time.set_timer(pygame.USEREVENT, 1000)
 
+
+    def restart(self):
+        self.died_signal = False
+        self.show_menu()
+
+        self.clock = pygame.time.Clock()
+
+        self.objectGroups = {
+            'all': pygame.sprite.Group(),
+            'enemy': pygame.sprite.Group(),
+            'player': pygame.sprite.Group(),
+            'items': pygame.sprite.Group()
+        }
+
+        FirstLevelCreator.__init__(
+            self, self.display_size, self.add_to_group, self.get_amount_objects)
+
+        self.last_sleep = 0
+        self.elampsed_time = 0
+        self.player = Player(self.display_width//2-50,
+                             self.display_height//2-50, self.display_size)
+
+        self.Score = Score(42)
 # -----------------------------------ОТРИСОКВКА И ОБНОВЛЕНИЕ-------------------------------------------------------
     def draw_interface(self):
         self.Score.draw(self.display, self.display_size)
@@ -227,8 +301,8 @@ class Game(Download, FirstLevelCreator):
             i.draw(self.display)
 
     def draw_font(self):
-        self.display.blit(self.font['font'], (0, self.y_font[0]))
-        self.display.blit(self.font['font'], (0, self.y_font[1]))
+        self.display.blit(self.font, (0, self.y_font[0]))
+        self.display.blit(self.font, (0, self.y_font[1]))
 
     def draw_objects(self):  # отрисовка элементов
         for i in self.get_all_objects:
@@ -321,7 +395,10 @@ class Game(Download, FirstLevelCreator):
                             else:
                                 if not element.run_burst:
                                     if self.player.hit(element.DAMAGE) <= 0:
-                                        self.exit_game()
+                                        self.show_menu()
+                                        self.died_signal = True
+
+                                        #self.exit_game()
 
                                 element.run_burst = True
 
@@ -426,11 +503,18 @@ class Game(Download, FirstLevelCreator):
                 self.last_spawner_sleeped(0)
 
             else:
-
-                self.Menu.draw(self.display)
-                self.Menu.update(pygame.mouse)
                 self.last_spawner_sleeped(
-                    pygame.time.get_ticks())
+                        pygame.time.get_ticks())
+
+                mouse_pos = pygame.mouse
+
+                if self.died_signal:
+                    self.DiedMenu.draw(self.display)
+                    self.DiedMenu.update(mouse_pos)
+                else:
+                    self.PauseMenu.draw(self.display)
+                    self.PauseMenu.update(mouse_pos)
+
 
             pygame.display.update()
             self.clock.tick(60)

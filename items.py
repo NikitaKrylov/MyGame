@@ -27,3 +27,4 @@ class AbstractItem(pygame.sprite.Sprite, Animator):
 class HeartItem(AbstractItem):
     def __init__(self, pos, images):
         super().__init__(pos, images)
+
