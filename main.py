@@ -7,14 +7,15 @@ from Enemy import *
 from Player import Player, Heart
 from Shells import LiteShell, Shell
 from items import HeartItem
+from scaler import Scale
 import ctypes
 
 
 class Download:  # загрузка основных компонентов игры
     def __init__(self, display_size):
-        display = pygame.display.set_mode(display_size)
+        self.display = pygame.display.set_mode(display_size)
+        self._display_size = display_size
         self.path = os.getcwd()
-        print(self.path)
         self.AMO = {
             'default': {
                 'default': pygame.image.load(self.path+f'\img\spaceship\shape.png').convert_alpha(),
@@ -40,12 +41,16 @@ class Download:  # загрузка основных компонентов иг
         self.font = pygame.image.load(
             self.path+r'\img\font\space2.png').convert_alpha()
 
+    def change_images_size(self):
+        print(1)
+        self.interface['menu2'][0] = Scale()._image(self.interface['menu2'][0],
+                                                    (self._display_size[0]*0.68)/self.interface['menu2'][0].get_width())
+
 
 class AbstractMenu(pygame.sprite.Sprite):
     def __init__(self, menu_images, display_size):
         scale = (display_size[0]*0.68)/menu_images[0].get_width()
-        self.menu_image = pygame.transform.scale(menu_images[0], (round(
-            menu_images[0].get_width()*scale), round(menu_images[0].get_height()*scale)))
+        self.menu_image = Scale()._image(menu_images[0], scale)
         self.blur_font = menu_images[1]
         self.buttons_list = []
 
@@ -124,9 +129,7 @@ class Button(pygame.sprite.Sprite):
         self.hover = False
         self.default_image = image
         self.rect = self.default_image.get_rect(center=center)
-
-        self.crop_image = pygame.transform.scale(
-            self.default_image, (int(self.default_image.get_width()*1.2), int(self.default_image.get_height()*1.2)))
+        self.crop_image = Scale()._image(self.default_image, 1.2)
         self.crop_rect = self.crop_image.get_rect(center=center)
 
     def update(self):
@@ -179,9 +182,7 @@ class Toolbar:
             image = image['default']
             size = (image.get_width(), image.get_height())
             change_index = self.tb_rect.height * 0.6//size[1]
-
-            image = pygame.transform.scale(
-                image, (int(size[0]*change_index), int(size[1]*change_index)))
+            image = Scale()._image(image, change_index)
             self.shells_image.update({name: image})
 
         self.position_list = [(i+2, self.tb_rect.y-2) for i in range((self.tb_rect.width//7)
@@ -226,6 +227,7 @@ class Game(Download, FirstLevelCreator):
             display_width, display_height)
 
         super().__init__(self.display_size)
+        self.change_images_size()
 
         FirstLevelCreator.__init__(
             self, self.display_size, self.add_to_group, self.get_amount_objects)
@@ -286,11 +288,13 @@ class Game(Download, FirstLevelCreator):
 # -----------------------------------ОТРИСОКВКА И ОБНОВЛЕНИЕ-------------------------------------------------------
 
     def draw_interface(self):
-        self.Score.draw(self.display, self.display_size)
+        #self.Score.draw(self.display, self.display_size)
         self.Toolbar.draw(self.display)
 
-        for i in self.player.heart_list:
+        for i in self.player.Health.heart_list:
             i.draw(self.display)
+
+        self.player.Stamina.draw(self.display)
 
     def draw_font(self):
         self.display.blit(self.font, (0, self.y_font[0]))
@@ -320,7 +324,7 @@ class Game(Download, FirstLevelCreator):
         for i in self.get_all_objects:
             i.update(now)
 
-        for i in self.player.heart_list:
+        for i in self.player.Health.heart_list:
             i.update(now)
 
         self.updateLevel(self.get_game_time)
@@ -384,11 +388,12 @@ class Game(Download, FirstLevelCreator):
                     # проверка коллизии с игроком
                     for player_rect in self.player.hitted_rects:
                         if player_rect.colliderect(hitted_rect):
-                            if isinstance(element, FlyingEnemy): #коллизмя игрока с вражеским кораблем
+                            # коллизмя игрока с вражеским кораблем
+                            if isinstance(element, FlyingEnemy):
                                 self.player.rect.y += self.player.rect.height
                                 self.player.hit(1)
                             else:
-                                if not element.run_burst:# колизия игрока с любым другим объктом
+                                if not element.run_burst:  # колизия игрока с любым другим объктом
                                     self.player.hit(element.DAMAGE)
 
                                 element.run_burst = True

@@ -94,7 +94,8 @@ class FirstEnemy(FlyingEnemy):
 
     def update(self, now):
         if self.run_burst:
-            self.burstAnimator.updateAnimation(now, len(self.burst_images), 90, self.drop_items)
+            self.burstAnimator.updateAnimation(
+                now, len(self.burst_images), 90, self.drop_items)
         else:
             self.burstAnimator.change_time(now)
             self.flowAnimator.updateAnimation(
@@ -118,19 +119,22 @@ class FirstEnemy(FlyingEnemy):
 
     def draw(self, display):
         if self.run_burst:
-            display.blit(self.burst_images[self.burstAnimator.getIteral], self.rect)
+            display.blit(
+                self.burst_images[self.burstAnimator.getIteral], self.rect)
         else:
-            display.blit(self.default_images[self.flowAnimator.getIteral], self.rect)
+            display.blit(
+                self.default_images[self.flowAnimator.getIteral], self.rect)
             pygame.draw.rect(display, (48, 50, 51), (self.rect.left,
-                                                    self.rect.top-self.display_size[1] % 10, self.rect.width, self.display_size[1] % 10))
+                                                     self.rect.top-self.display_size[1] % 10, self.rect.width, int(self.rect.height*0.07)))
             p = 0 if self.XP/self.DEFAULTXP*100 < 0 else self.XP/self.DEFAULTXP*100
 
-            pygame.draw.rect(display, (200, 0, 0), (self.rect.left,
-                                                    self.rect.top-self.display_size[1] % 10, int(self.rect.width/100*p), self.display_size[1] % 10))
+            pygame.draw.rect(display, (200, 0, 0), (self.rect.left, self.rect.top -
+                                                    self.display_size[1] % 10, int(self.rect.width/100*p), int(self.rect.height*0.07)))
 
     def Strike(self, now):
         if not self.run_burst:
-            self.add_function(RedShell(self.redshell, self.rect), ('all', 'enemy'))
+            self.add_function(
+                RedShell(self.redshell, self.rect), ('all', 'enemy'))
 
     def hit(self, damage):
         self.XP -= damage
@@ -176,9 +180,10 @@ class Asteroid(StaticEnemy):
 
     def update(self, now):
         if self.run_burst:
-            self.burstAnimator.updateAnimation(now, len(self.burst_list),130, self.drop_items)
+            self.burstAnimator.updateAnimation(
+                now, len(self.burst_list), 130, self.drop_items)
         else:
-            self.burstAnimator.change_time(now) 
+            self.burstAnimator.change_time(now)
 
             # перемещение
             for rect in [self.rect, self.hitted_rects[0]]:
@@ -198,4 +203,3 @@ class Asteroid(StaticEnemy):
 
     def __str__(self):
         return 'Asteroid'
-

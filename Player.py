@@ -1,6 +1,18 @@
 import pygame
 import os
+from scaler import Scale
 from animation import Animator
+
+
+class Stamina:
+    def __init__(self, display_size):
+        self.display_size = display_size
+        self.image = pygame.image.load(
+            os.getcwd()+f'\img\interface\Stamina.png').convert_alpha()
+        self.rect = self.image.get_rect(topleft=(display_size[0]//2, 15))
+
+    def draw(self, display):
+        display.blit(self.image, self.rect)
 
 
 class Heart(pygame.sprite.Sprite):
@@ -52,6 +64,8 @@ class HeartsGroup:
             os.getcwd()+r'\img\interface\whiteheart.png').convert_alpha(),
             pygame.image.load(os.getcwd()+r'\img\interface\deathheart.png').convert_alpha()]
 
+        self.heart_images = Scale()._list(self.heart_images, 1)
+
         for i in range(1, 11):
             self.heart_list.append(
                 Heart(self.heart_images, i*45, self.heart_images[0].get_height()))
@@ -66,14 +80,15 @@ class HeartsGroup:
             self.heart_list[i].start_heal_animation = True
 
 
-class Player(pygame.sprite.Sprite,  HeartsGroup):
+class Player(pygame.sprite.Sprite,  HeartsGroup, Stamina):
     def __init__(self, x, y, display_size):
         super().__init__()
 
         self.burstAnimator = Animator()
         self.flowAnimator = Animator()
 
-        HeartsGroup.__init__(self, display_size)
+        self.Health = HeartsGroup(display_size)
+        self.Stamina = Stamina(display_size)
 
         self.x, self.y = x, y
         self.display_size = display_size
@@ -104,7 +119,8 @@ class Player(pygame.sprite.Sprite,  HeartsGroup):
                                          65, self.rect.right - self.rect.left-22, 45)
                              ]
 
-        self.flowAnimator.updateAnimation(now, len(self.acting_images), tick, self.flowAnimator.IteralToNull)
+        self.flowAnimator.updateAnimation(
+            now, len(self.acting_images), tick, self.flowAnimator.IteralToNull)
 
     def draw(self, display):
         display.blit(self.acting_images[self.flowAnimator.getIteral],
@@ -117,7 +133,7 @@ class Player(pygame.sprite.Sprite,  HeartsGroup):
 
     def hit(self, damage):
         self.XP -= damage
-        super().hit(self.XP, damage)
+        self.Health.hit(self.XP, damage)
 
         return self.XP
 
@@ -127,7 +143,7 @@ class Player(pygame.sprite.Sprite,  HeartsGroup):
 
         elif self.XP + amount <= self.DEFAULTXP:
             self.XP += amount
-            super().heal(self.XP, amount)
+            self.Health.heal(self.XP, amount)
 
         else:
             # аааааа дублирование кода

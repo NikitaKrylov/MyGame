@@ -4,12 +4,6 @@ import os
 import random
 
 
-def scaleImage(images, index):
-    for i in range(len(images)):
-        images[i] = pygame.transform.scale(
-            images[i], (int(images[i].get_width()*index), int(images[i].get_width()*index)))
-
-    return images
 
 
 class AbstractSpawner:
