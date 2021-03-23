@@ -2,6 +2,7 @@ import pygame
 import os
 from scaler import Scale
 from animation import Animator
+import numpy as np
 
 
 class Stamina:
@@ -10,9 +11,32 @@ class Stamina:
         self.image = pygame.image.load(
             os.getcwd()+f'\img\interface\Stamina.png').convert_alpha()
         self.rect = self.image.get_rect(topleft=(display_size[0]//2, 15))
+        self.padding = round(self.rect.width*0.05)
+        self.circleValues = np.arange(
+            self.rect.left+self.padding, self.rect.right-self.padding, dtype=np.int)
+        self.DEFAULTAMOUNT = 150
+        self.AMOUNT = self.DEFAULTAMOUNT
+        self.step = self.circleValues.size / self.AMOUNT
+        print(self.circleValues.size)
 
     def draw(self, display):
         display.blit(self.image, self.rect)
+
+        for i in self.circleValues[:int(self.AMOUNT*self.step)]:
+            pygame.draw.circle(display, (0, 180, 244), (i, self.rect.centery), self.rect.height//2-self.padding//3)
+
+    def toSpend(self, value):
+        if self.AMOUNT - value >= 0:
+            self.AMOUNT -= value
+            return True
+        else:
+            return False
+
+    def toEnlarge(self, value):
+        if self.AMOUNT + value <= self.DEFAULTAMOUNT:
+            self.AMOUNT += value
+        elif self.AMOUNT + value > self.DEFAULTAMOUNT:
+            self.AMOUNT = self.DEFAULTAMOUNT
 
 
 class Heart(pygame.sprite.Sprite):
@@ -128,8 +152,9 @@ class Player(pygame.sprite.Sprite,  HeartsGroup, Stamina):
 
     def Strike(self, now, object, image, func):
         if now - self.last_strike > object.cooldawn:
-            func(object(image, self.rect), ('all', 'player'))
-            self.last_strike = now
+            if self.Stamina.toSpend(object.stm):
+                func(object(image, self.rect), ('all', 'player'))
+                self.last_strike = now
 
     def hit(self, damage):
         self.XP -= damage

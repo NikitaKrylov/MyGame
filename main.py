@@ -42,7 +42,6 @@ class Download:  # загрузка основных компонентов иг
             self.path+r'\img\font\space2.png').convert_alpha()
 
     def change_images_size(self):
-        print(1)
         self.interface['menu2'][0] = Scale()._image(self.interface['menu2'][0],
                                                     (self._display_size[0]*0.68)/self.interface['menu2'][0].get_width())
 

@@ -30,7 +30,8 @@ class Shell(pygame.sprite.Sprite, Animator):  # общий класс для п�
         self.hitted_rects[0] = self.rect
 
         if self.run_burst:
-            self.burstAnimator.updateAnimation(now, len(self.burst_list), 40, self.kill)
+            self.burstAnimator.updateAnimation(
+                now, len(self.burst_list), 40, self.kill)
             self.speed = 0
         else:
             self.burstAnimator.change_time(now)
@@ -45,6 +46,7 @@ class Bullet(Shell):
 
 class LiteShell(Shell):
     cooldawn = 200
+    stm = 2
 
     def __init__(self, images, rect):
         self.speed = 21
