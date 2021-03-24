@@ -1,5 +1,6 @@
 import pygame
 from animation import Animator
+from math import sqrt
 
 
 class AbstractItem(pygame.sprite.Sprite, Animator):
@@ -8,6 +9,8 @@ class AbstractItem(pygame.sprite.Sprite, Animator):
         Animator.__init__(self)
 
         self.images = images
+        self.default_speed = 1600
+        self.speed = self.default_speed
 
         if isinstance(self.images, list):
             self.rect = self.images[0].get_rect(center=pos)
@@ -17,8 +20,17 @@ class AbstractItem(pygame.sprite.Sprite, Animator):
     def draw(self, display):
         display.blit(self.images, self.rect)
 
-    def update(self, now):
-        self.rect.y += 1
+    def update(self, now, _player):
+        dx, dy = _player.centerx - self.rect.centerx, _player.centery - self.rect.centery
+        distanse = sqrt(dx**2+dy**2)
+
+        if distanse > _player.height*3:
+            self.rect.y += 1
+        else:
+            self.speed = round(self.default_speed / distanse)
+            dx, dy = dx/distanse*self.speed, dy/distanse*self.speed
+            self.rect.centerx += dx
+            self.rect.centery += dy
 
     def use(self):
         self.function()

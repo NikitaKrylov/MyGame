@@ -6,7 +6,7 @@ from levelCreator import FirstLevelCreator
 from Enemy import *
 from Player import Player, Heart
 from Shells import LiteShell, Shell
-from items import HeartItem
+from items import HeartItem, AbstractItem
 from scaler import Scale
 import ctypes
 
@@ -321,7 +321,10 @@ class Game(Download, FirstLevelCreator):
             self.y_font[i] += 1
 
         for i in self.get_all_objects:
-            i.update(now)
+            if isinstance(i, AbstractItem):
+                i.update(now, self.player.rect)
+            else:
+                i.update(now)
 
         for i in self.player.Health.heart_list:
             i.update(now)
