@@ -146,6 +146,13 @@ class FirstLevelCreator(AbstractLevelCreator, AsteroidSpawner, FirstEnemySpawner
             }
         }
         }
+        drop = {
+            'health' : pygame.image.load(os.getcwd()+r'\img\interface\heart2.png').convert_alpha(),
+            'manapoint' : pygame.image.load(os.getcwd()+r'\img\spaceship\mana.png').convert_alpha()
+        }
+        
+        enemy['asteroid']['drop'] = drop
+        enemy['flightenemy']['drop'] = drop
 
         self.__FirstEnemySpawner = FirstEnemySpawner(
             enemy['flightenemy'], display_size, add_function, get_amount)

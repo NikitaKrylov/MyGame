@@ -3,8 +3,9 @@ import random
 from animation import Animator
 from math import sin, cos
 from Shells import Shell
-from items import HeartItem
+from items import HeartItem, ManaPoint
 import os
+from Player import Player
 
 
 class AbstractEnemy(pygame.sprite.Sprite):
@@ -56,6 +57,7 @@ class FirstEnemy(FlyingEnemy):
         self.default_images = images['default']
         self.burst_images = images['burst']
         self.redshell = images
+        self.drop = images['drop']
 
         self.rect = self.default_images[0].get_rect(
             center=((self.default_images[0].get_width()*-2, self.display_size[1]*0.6)))
@@ -77,9 +79,12 @@ class FirstEnemy(FlyingEnemy):
         self.last_strike = 0
 
     def drop_items(self):
-        # if random.randint(1, 4) == 1:
-        #     self.add_function(HeartItem(self.rect.center, pygame.image.load(os.getcwd()+r'\img\interface\heart2.png').convert_alpha()), ('all', 'items'))
-
+        #iasf random.randint(1, 4) == 1:
+            #self.add_function(HeartItem(self.rect.center, pygame.image.load(os.getcwd()+r'\img\interface\heart2.png').convert_alpha()), ('all', 'items'))
+        for i in range(random.randint(1, 4)):
+            self.add_function(ManaPoint(
+                (random.randint(self.rect.left, self.rect.right), random.randint(self.rect.top, self.rect.bottom)), self.drop['manapoint']), ('all', 'items'))
+        
         self.kill()  # финальная часть
 
     def change_y_position(self):
@@ -149,6 +154,7 @@ class Asteroid(StaticEnemy):
 
         self.scale_index = random.uniform(0.8, 2.0)
         random_image = random.choice(image['default'])
+        self.drop = image['drop']
 
         self.burst_list = [pygame.transform.scale(im, (int(random_image.get_width(
         )*self.scale_index), int(random_image.get_height()*self.scale_index))) for im in image['burst']]
@@ -170,6 +176,7 @@ class Asteroid(StaticEnemy):
         self.XP = int(self.scale_index * 1.5 * 26)
         self.DAMAGE = 2 if self.scale_index >= 1.7 else 1
         self.EXP = 25 if self.scale_index >= 1.8 else 18
+
 
     def draw(self, display):
         if self.run_burst:

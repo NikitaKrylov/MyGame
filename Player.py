@@ -5,7 +5,7 @@ from animation import Animator
 import numpy as np
 
 
-class Stamina:
+class Mana:
     def __init__(self, display_size):
         self.display_size = display_size
         self.image = pygame.image.load(
@@ -23,7 +23,7 @@ class Stamina:
         display.blit(self.image, self.rect)
 
         for i in self.circleValues[:int(self.AMOUNT*self.step)]:
-            pygame.draw.circle(display, (0, 180, 244), (i, self.rect.centery), self.rect.height//2-self.padding//3)
+            pygame.draw.circle(display, (0, 180, 255), (i, self.rect.centery), self.rect.height//2-self.padding//3)
 
     def toSpend(self, value):
         if self.AMOUNT - value >= 0:
@@ -104,7 +104,7 @@ class HeartsGroup:
             self.heart_list[i].start_heal_animation = True
 
 
-class Player(pygame.sprite.Sprite,  HeartsGroup, Stamina):
+class Player(pygame.sprite.Sprite,  HeartsGroup, Mana):
     def __init__(self, x, y, display_size):
         super().__init__()
 
@@ -112,7 +112,7 @@ class Player(pygame.sprite.Sprite,  HeartsGroup, Stamina):
         self.flowAnimator = Animator()
 
         self.Health = HeartsGroup(display_size)
-        self.Stamina = Stamina(display_size)
+        self.Stamina = Mana(display_size)
 
         self.x, self.y = x, y
         self.display_size = display_size
@@ -175,3 +175,5 @@ class Player(pygame.sprite.Sprite,  HeartsGroup, Stamina):
             amount = (self.XP + amount)-self.DEFAULTXP
             self.XP += amount
             super().heal(self.XP, amount)
+
+

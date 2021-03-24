@@ -40,3 +40,8 @@ class HeartItem(AbstractItem):
     def __init__(self, pos, images):
         super().__init__(pos, images)
 
+
+class ManaPoint(AbstractItem):
+    def __init__(self, pos, images):
+        super().__init__(pos, images)
+
