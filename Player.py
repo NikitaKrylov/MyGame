@@ -117,16 +117,24 @@ class Player(pygame.sprite.Sprite,  HeartsGroup, Mana):
         self.x, self.y = x, y
         self.display_size = display_size
 
-        self.images = [pygame.image.load(
-            os.getcwd()+r'\img\spaceship\space'+str(i)+'.png') for i in range(1, 3)]
-        self.left_move = [pygame.image.load(
-            os.getcwd()+r'\img\spaceship\left'+str(i)+'.png') for i in range(1, 3)]
-        self.right_move = [pygame.image.load(
-            os.getcwd()+r'\img\spaceship\right'+str(i)+'.png') for i in range(1, 3)]
-        self.acting_images = self.images
+        path = os.getcwd()
+        self.skins = {
+            'red' : {
+                'left_move' : [pygame.image.load(path+r'\img\spaceship\purpleship\left'+str(i)+'.png') for i in range(1, 3)],
+                'right_move' : [pygame.image.load(path+r'\img\spaceship\purpleship\right'+str(i)+'.png') for i in range(1, 3)],
+                'default' : [pygame.image.load(path+r'\img\spaceship\purpleship\space'+str(i)+'.png') for i in range(1, 3)]
+            },
+            'purple' : {
+                'left_move' : [pygame.image.load(path+r'\img\spaceship\redship\left'+str(i)+'.png') for i in range(1, 3)],
+                'right_move' : [pygame.image.load(path+r'\img\spaceship\redship\right'+str(i)+'.png') for i in range(1, 3)],
+                'default' : [pygame.image.load(path+r'\img\spaceship\redship\space'+str(i)+'.png') for i in range(1, 3)]
+            }
+        }
+        self.images = self.skins['red']
+        self.acting_images = self.images['default']
 
         self.rect = pygame.Rect(
-            self.x, self.y, self.images[0].get_width(), self.images[0].get_height())
+            self.x, self.y, self.images['default'][0].get_width(), self.images['default'][0].get_height())
         self.speed = {'accel': 1, 'finite': 8}
         self.DEFAULTXP = 10
         self.XP = self.DEFAULTXP
@@ -175,5 +183,10 @@ class Player(pygame.sprite.Sprite,  HeartsGroup, Mana):
             amount = (self.XP + amount)-self.DEFAULTXP
             self.XP += amount
             super().heal(self.XP, amount)
+
+    def changeSkinPack(self, pack_name):
+        self.images = self.skins[pack_name]
+        self.rect = pygame.Rect(
+            self.x, self.y, self.images['default'][0].get_width(), self.images['default'][0].get_height())
 
 

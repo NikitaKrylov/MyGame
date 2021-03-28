@@ -5,7 +5,7 @@ import sys
 from levelCreator import FirstLevelCreator
 from Enemy import *
 from Player import Player, Heart
-from Shells import LiteShell, Shell
+from Shells import LiteShell, Shell, Bullet
 from items import HeartItem, AbstractItem
 from scaler import Scale
 import ctypes
@@ -17,13 +17,13 @@ class Download:  # загрузка основных компонентов иг
         self._display_size = display_size
         self.path = os.getcwd()
         self.AMO = {
-            'default': {
-                'default': pygame.image.load(self.path+f'\img\spaceship\shape.png').convert_alpha(),
-                'burst': []
+            'lastlite': {
+                'default': pygame.image.load(self.path+f'\img\shells\lastlite\lite.png').convert_alpha(),
+                'burst': [pygame.image.load(self.path+f'\img\shells\lastlite\lite' + str(i) + '.png').convert_alpha() for i in range(1, 5)]
             },
             'lite': {
-                'default': pygame.image.load(self.path+f'\img\spaceship\lite.png').convert_alpha(),
-                'burst': [pygame.image.load(self.path+f'\img\spaceship\lite' + str(i) + '.png').convert_alpha() for i in range(1, 5)]
+                'default': pygame.image.load(self.path+f'\img\shells\lite\shell.png').convert_alpha(),
+                'burst': [pygame.image.load(self.path+f'\img\shells\lite\shell' + str(i) + '.png').convert_alpha() for i in range(1, 5)]
             }
         }
         self.interface = {
@@ -189,8 +189,8 @@ class Toolbar:
 
         self.number_list = {i+49: i for i in range(0, len(self.tb_images))}
 
-        self.objects = {0: [LiteShell, self.shells_image['lite']], 1: [
-            LiteShell, self.shells_image['lite']]}
+        self.objects = {0: [LiteShell, self.shells_image['lite']],
+                        1: [Bullet, self.shells_image['lastlite']]}
         self.iteral = 0
 
     def scroll(self, command):  # переключение элементов тулбара
@@ -334,6 +334,7 @@ class Game(Download, FirstLevelCreator):
 
 # --------------------------------------ОБРАБОТЧИК ЗАЖАТЫХ КЛАВИШЬ-----------------------------------------------
 
+
     def keyHandler(self, key):  # обрабатывает зажатые клавишиd
         if True not in key:
             self.player.speed['accel'] = 2
@@ -349,17 +350,18 @@ class Game(Download, FirstLevelCreator):
 
         if key[pygame.K_a] and self.player.rect.left > 0:
             self.player.rect.x -= int(self.player.speed['accel'])
-            self.player.acting_images = self.player.left_move
+            self.player.acting_images = self.player.images['left_move']
 
         if key[pygame.K_d] and self.player.rect.right < self.display_width:
             self.player.rect.x += int(self.player.speed['accel'])
-            self.player.acting_images = self.player.right_move
+            self.player.acting_images = self.player.images['right_move']
 
         if not key[pygame.K_d] and not key[pygame.K_a]:
-            self.player.acting_images = self.player.images
+            self.player.acting_images = self.player.images['default']
 
 
 # -------------------------------------------ИГРОВЫЕ МЕХАННИКИ-----------------------------------------------
+
 
     def collide_screen(self):  # проверка вышли ли элементы за предел экрана\
         for element in self.get_all_objects:
@@ -371,9 +373,8 @@ class Game(Download, FirstLevelCreator):
 
     def collide_objects(self):
         for element in self.get_all_objects:  # все элементы на экране
-            if isinstance(element, AbstractEnemy):  # если element враг
-                for hitted_rect in element.hitted_rects:
-
+            for hitted_rect in element.hitted_rects:
+                if isinstance(element, AbstractEnemy):  # если element враг
                     # проверка коллизии со снарядом
                     if not isinstance(element, Shell):
                         for shell in self.get_player:
@@ -398,13 +399,19 @@ class Game(Download, FirstLevelCreator):
                                 if not element.run_burst:  # колизия игрока с любым другим объктом
                                     self.player.hit(element.DAMAGE)
 
+                                element.drop_items = element.kill
                                 element.run_burst = True
 
-            elif isinstance(element, HeartItem):
-                for player_rect in self.player.hitted_rects:
-                    if player_rect.colliderect(element.rect):
-                        self.player.heal(1)
-                        element.kill()
+                elif isinstance(element, AbstractItem):
+                    for player_rect in self.player.hitted_rects:
+                        if player_rect.colliderect(hitted_rect):
+                            if isinstance(element, HeartItem):
+                                self.player.heal(1)
+                                element.kill()
+
+                            elif isinstance(element, ManaPoint):
+                                self.player.Stamina.toEnlarge(4)
+                                element.kill()
 # ---------------------------------------ТЕХНИЧЕСКИЕ МОМЕНТЫ-------------------------------------------
 
     def exit_game(self):

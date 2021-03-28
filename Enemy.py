@@ -19,15 +19,40 @@ class AbstractEnemy(pygame.sprite.Sprite):
 
 
 class FlyingEnemy(AbstractEnemy):
-    def __init__(self, add_function):
+    def __init__(self, images, add_function):
         self.add_function = add_function
+        self.add_function = add_function
+        self.default_images = images['default']
+        self.burst_images = images['burst']
+        self.redshell = images
+        self.drop = images['drop']
         super().__init__()
+    
+    def drop_items(self):
+        for i in range(random.randint(2, 6)):
+            self.add_function(ManaPoint(
+                (random.randint(self.rect.left, self.rect.right), random.randint(self.rect.top, self.rect.bottom)), self.drop['manapoint']), ('all', 'items'))
+        self.kill()
+
 
 
 class StaticEnemy(AbstractEnemy):
     def __init__(self, add_function):
         self.add_function = add_function
         super().__init__()
+
+    def drop_items(self):
+        if random.randint(1, 4) == 1:
+            self.add_function(HeartItem(self.rect.center, self.drop['health']), ('all', 'items'))
+
+        for i in range(random.randint(1, 4)):
+            self.add_function(ManaPoint(
+                (random.randint(self.rect.left, self.rect.right), random.randint(self.rect.top, self.rect.bottom)), self.drop['manapoint']), ('all', 'items'))
+        
+        self.kill()
+
+
+    
 
 
 class ShellsEnemy(AbstractEnemy, Shell):
@@ -50,14 +75,10 @@ class RedShell(ShellsEnemy):
 
 class FirstEnemy(FlyingEnemy):
     def __init__(self, images: list,  display_size: list, add_function):
-        super().__init__(add_function)
+        super().__init__(images, add_function)
         self.display_size = display_size
         self.iteral_index = 1
         self.list_iteral = 0
-        self.default_images = images['default']
-        self.burst_images = images['burst']
-        self.redshell = images
-        self.drop = images['drop']
 
         self.rect = self.default_images[0].get_rect(
             center=((self.default_images[0].get_width()*-2, self.display_size[1]*0.6)))
@@ -75,17 +96,8 @@ class FirstEnemy(FlyingEnemy):
         self.DEFAULTXP = self.XP
         self.DAMAGE = 1
         self.EXP = 110
-
         self.last_strike = 0
 
-    def drop_items(self):
-        #iasf random.randint(1, 4) == 1:
-            #self.add_function(HeartItem(self.rect.center, pygame.image.load(os.getcwd()+r'\img\interface\heart2.png').convert_alpha()), ('all', 'items'))
-        for i in range(random.randint(1, 4)):
-            self.add_function(ManaPoint(
-                (random.randint(self.rect.left, self.rect.right), random.randint(self.rect.top, self.rect.bottom)), self.drop['manapoint']), ('all', 'items'))
-        
-        self.kill()  # финальная часть
 
     def change_y_position(self):
         if self.rect.bottom > self.display_size[1]*0.4 and self.y_speed > 0:
@@ -156,7 +168,7 @@ class Asteroid(StaticEnemy):
         random_image = random.choice(image['default'])
         self.drop = image['drop']
 
-        self.burst_list = [pygame.transform.scale(im, (int(random_image.get_width(
+        self.burst_images = [pygame.transform.scale(im, (int(random_image.get_width(
         )*self.scale_index), int(random_image.get_height()*self.scale_index))) for im in image['burst']]
 
         self.image = pygame.transform.scale(random_image, (int(random_image.get_width(
@@ -181,14 +193,16 @@ class Asteroid(StaticEnemy):
     def draw(self, display):
         if self.run_burst:
             display.blit(
-                self.burst_list[self.burstAnimator.getIteral], self.rect)
+                self.burst_images[self.burstAnimator.getIteral], self.rect)
         else:
             display.blit(self.image_copy, self.rect)
 
     def update(self, now):
         if self.run_burst:
             self.burstAnimator.updateAnimation(
-                now, len(self.burst_list), 130, self.drop_items)
+                now, len(self.burst_images), 130, self.drop_items)
+            # if self.burstAnimator.getIteral == len(self.burst_images)//2:
+            #     self.drop_items()
         else:
             self.burstAnimator.change_time(now)
 
@@ -201,12 +215,7 @@ class Asteroid(StaticEnemy):
             self.rect, self.image_copy = self.flowAnimator.Rotate(
                 now, self.rot_speed, self.rect, self.image, self.image_copy, 15)
 
-    def drop_items(self):
-        if random.randint(1, 4) == 1:
-            self.add_function(HeartItem(self.rect.center, pygame.image.load(
-                os.getcwd()+r'\img\interface\heart2.png').convert_alpha()), ('all', 'items'))
-
-        self.kill()
+   
 
     def __str__(self):
         return 'Asteroid'

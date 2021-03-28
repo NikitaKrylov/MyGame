@@ -38,18 +38,20 @@ class Shell(pygame.sprite.Sprite, Animator):  # общий класс для п�
 
 
 class Bullet(Shell):
-    def __init__(self, images, rect, groups):
-        self.speed = 12
-        self.DAMAGE = 21
-        super().__init__(images, rect, 'default', self.speed)
+    cooldawn = 200
+    stm = 2
 
+    def __init__(self, images, rect):
+        self.speed = 20
+        self.DAMAGE = 15
+        super().__init__(images, rect, 'lastlite', self.speed)
 
 class LiteShell(Shell):
     cooldawn = 200
     stm = 2
 
     def __init__(self, images, rect):
-        self.speed = 21
+        self.speed = 20
         self.DAMAGE = 15
         super().__init__(images, rect, 'lite', self.speed)
 

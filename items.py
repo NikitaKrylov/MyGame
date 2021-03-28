@@ -16,6 +16,7 @@ class AbstractItem(pygame.sprite.Sprite, Animator):
             self.rect = self.images[0].get_rect(center=pos)
         else:
             self.rect = self.images.get_rect(center=pos)
+            self.hitted_rects = [self.rect.copy()]
 
     def draw(self, display):
         display.blit(self.images, self.rect)
@@ -27,10 +28,15 @@ class AbstractItem(pygame.sprite.Sprite, Animator):
         if distanse > _player.height*3:
             self.rect.y += 1
         else:
-            self.speed = round(self.default_speed / distanse)
+            try:
+                self.speed = round(self.default_speed / distanse)
+            except ZeroDivisionError:
+                self.speed = self.default_speed
+
             dx, dy = dx/distanse*self.speed, dy/distanse*self.speed
             self.rect.centerx += dx
             self.rect.centery += dy
+            self.hitted_rects[0] = self.rect.copy()
 
     def use(self):
         self.function()
