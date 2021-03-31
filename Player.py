@@ -23,7 +23,8 @@ class Mana:
         display.blit(self.image, self.rect)
 
         for i in self.circleValues[:int(self.AMOUNT*self.step)]:
-            pygame.draw.circle(display, (0, 180, 255), (i, self.rect.centery), self.rect.height//2-self.padding//3)
+            pygame.draw.circle(
+                display, (0, 180, 255), (i, self.rect.centery), self.rect.height//2-self.padding//3)
 
     def toSpend(self, value):
         if self.AMOUNT - value >= 0:
@@ -119,18 +120,20 @@ class Player(pygame.sprite.Sprite,  HeartsGroup, Mana):
 
         path = os.getcwd()
         self.skins = {
-            'red' : {
-                'left_move' : [pygame.image.load(path+r'\img\spaceship\purpleship\left'+str(i)+'.png') for i in range(1, 3)],
-                'right_move' : [pygame.image.load(path+r'\img\spaceship\purpleship\right'+str(i)+'.png') for i in range(1, 3)],
-                'default' : [pygame.image.load(path+r'\img\spaceship\purpleship\space'+str(i)+'.png') for i in range(1, 3)]
+            'purple': {
+                'left_move': [pygame.image.load(path+r'\img\spaceship\purpleship\left'+str(i)+'.png') for i in range(1, 3)],
+                'right_move': [pygame.image.load(path+r'\img\spaceship\purpleship\right'+str(i)+'.png') for i in range(1, 3)],
+                'default': [pygame.image.load(path+r'\img\spaceship\purpleship\space'+str(i)+'.png') for i in range(1, 3)],
+                'color' : 'purple'
             },
-            'purple' : {
-                'left_move' : [pygame.image.load(path+r'\img\spaceship\redship\left'+str(i)+'.png') for i in range(1, 3)],
-                'right_move' : [pygame.image.load(path+r'\img\spaceship\redship\right'+str(i)+'.png') for i in range(1, 3)],
-                'default' : [pygame.image.load(path+r'\img\spaceship\redship\space'+str(i)+'.png') for i in range(1, 3)]
+            'red': {
+                'left_move': [pygame.image.load(path+r'\img\spaceship\redship\left'+str(i)+'.png') for i in range(1, 3)],
+                'right_move': [pygame.image.load(path+r'\img\spaceship\redship\right'+str(i)+'.png') for i in range(1, 3)],
+                'default': [pygame.image.load(path+r'\img\spaceship\redship\space'+str(i)+'.png') for i in range(1, 3)],
+                'color' : 'red'
             }
         }
-        self.images = self.skins['red']
+        self.images = self.skins['purple']
         self.acting_images = self.images['default']
 
         self.rect = pygame.Rect(
@@ -146,9 +149,9 @@ class Player(pygame.sprite.Sprite,  HeartsGroup, Mana):
         self.last_strike = 0
 
     def update(self, now, tick=80):
-        self.hitted_rects = [pygame.Rect(self.rect.centerx - 10, self.rect.top+15, 20, self.rect.bottom - self.rect.top-25),
-                             pygame.Rect(self.rect.left+10, self.rect.top +
-                                         65, self.rect.right - self.rect.left-22, 45)
+        self.hitted_rects = [pygame.Rect(self.rect.centerx - self.rect.width*.2//2, self.rect.top, self.rect.width*0.2, self.rect.bottom - self.rect.top-self.rect.height*0.1),
+                             pygame.Rect(self.rect.left, self.rect.top+self.rect.height*0.36,
+                                         self.rect.right - self.rect.left, self.rect.height*0.25)
                              ]
 
         self.flowAnimator.updateAnimation(
@@ -157,6 +160,8 @@ class Player(pygame.sprite.Sprite,  HeartsGroup, Mana):
     def draw(self, display):
         display.blit(self.acting_images[self.flowAnimator.getIteral],
                      (self.rect.x, self.rect.y))
+        for r in self.hitted_rects:
+            pygame.draw.rect(display, (255, 0, 0), r, 1)
 
     def Strike(self, now, object, image, func):
         if now - self.last_strike > object.cooldawn:
@@ -186,7 +191,5 @@ class Player(pygame.sprite.Sprite,  HeartsGroup, Mana):
 
     def changeSkinPack(self, pack_name):
         self.images = self.skins[pack_name]
-        self.rect = pygame.Rect(
-            self.x, self.y, self.images['default'][0].get_width(), self.images['default'][0].get_height())
-
-
+        self.rect = pygame.Rect(self.rect.x, self.rect.y, self.images['default'][0].get_width(), self.images['default'][0].get_height())
+        

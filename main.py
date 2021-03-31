@@ -28,8 +28,11 @@ class Download:  # загрузка основных компонентов иг
         }
         self.interface = {
             'toolbar': [pygame.image.load(self.path+r'\img\interface\Toolbar\navigate'+str(i)+'.png').convert_alpha() for i in range(1, 6)],
-            'menu2': [pygame.image.load(self.path+r'\img\font\menu2.png').convert_alpha(), pygame.image.load(self.path+r'\img\font\font2.png').convert_alpha()],
-            'menu': [pygame.image.load(self.path+r'\img\font\menu.png').convert_alpha(), pygame.image.load(self.path+r'\img\font\font2.png').convert_alpha()],
+            'menu': [pygame.image.load(self.path+r'\img\font\menu2.png').convert_alpha(), pygame.image.load(self.path+r'\img\font\font3.png').convert_alpha()],
+            'labels': {
+                'menu': pygame.image.load(self.path+r'\img\font\Menu.png').convert_alpha(),
+                'died': pygame.image.load(self.path+r'\img\font\YouDied.png').convert_alpha()
+            },
             'buttons': {
                 'continue': pygame.image.load(self.path+r'\img\interface\Continue.png').convert_alpha(),
                 'exit': pygame.image.load(self.path+r'\img\interface\Quite.png').convert_alpha(),
@@ -41,16 +44,13 @@ class Download:  # загрузка основных компонентов иг
         self.font = pygame.image.load(
             self.path+r'\img\font\space2.png').convert_alpha()
 
-    def change_images_size(self):
-        self.interface['menu2'][0] = Scale()._image(self.interface['menu2'][0],
-                                                    (self._display_size[0]*0.68)/self.interface['menu2'][0].get_width())
-
 
 class AbstractMenu(pygame.sprite.Sprite):
     def __init__(self, menu_images, display_size):
-        scale = (display_size[0]*0.68)/menu_images[0].get_width()
-        self.menu_image = Scale()._image(menu_images[0], scale)
-        self.blur_font = menu_images[1]
+        scale = (display_size[0]*0.68)/menu_images['menu'][0].get_width()
+        self.menu_image = Scale()._image(menu_images['menu'][0], scale)
+        self.blur_font = menu_images['menu'][1]
+        self.label = None
         self.buttons_list = []
 
         self.rect = self.menu_image.get_rect(
@@ -86,40 +86,48 @@ class AbstractMenu(pygame.sprite.Sprite):
 
         display.blit(self.score_text, (self.rect.centerx*0.5,
                                        self.rect.top+self.font_size))
+        display.blit(self.label, (self.rect.centerx -
+                                  self.label.get_width()//2, self.rect.top+self.rect.height*0.2))
 
 
 class PauseMenu(AbstractMenu):
-    def __init__(self, menu_images, button_images, display_size, **func):
+    def __init__(self, menu_images, display_size, **func):
         super().__init__(menu_images, display_size)
 
         self.buttons_list = [
-            Button(button_images['continue'],
+            Button(menu_images['buttons']['continue'],
                    (self.rect.centerx, self.rect.centery*.87), func['continue_']),
 
-            Button(button_images['settings'],
+            Button(menu_images['buttons']['settings'],
                    (self.rect.centerx, self.rect.centery*1.12), func['settings_']),
 
-            Button(button_images['restart'],
+            Button(menu_images['buttons']['restart'],
                    (self.rect.centerx, self.rect.centery*1.37), func['restart_']),
 
-            Button(button_images['exit'],
+            Button(menu_images['buttons']['exit'],
                    (self.rect.centerx, self.rect.centery*1.62), func['exit_']),
 
         ]
+        self.label = menu_images['labels']['menu']
 
 
 class DiedMune(AbstractMenu):
-    def __init__(self, menu_images, button_images, display_size, **func):
+    def __init__(self, menu_images, display_size, **func):
         super().__init__(menu_images, display_size)
 
         self.buttons_list = [
-            Button(button_images['restart'],
+            Button(menu_images['buttons']['restart'],
                    self.rect.center, func['restart_']),
-            Button(button_images['settings'], (self.rect.centerx,
-                                               self.rect.centery+self.rect.height//5.5), func['settings_']),
-            Button(button_images['exit'], (self.rect.centerx,
-                                           self.rect.centery+self.rect.height//3), func['exit_'])
+            Button(menu_images['buttons']['settings'], (self.rect.centerx,
+                                                        self.rect.centery+self.rect.height//5.5), func['settings_']),
+            Button(menu_images['buttons']['exit'], (self.rect.centerx,
+                                                    self.rect.centery+self.rect.height//3), func['exit_'])
         ]
+        self.label = menu_images['labels']['died']
+
+
+class Inventary(AbstractMenu):
+    pass
 
 
 class Button(pygame.sprite.Sprite):
@@ -226,7 +234,6 @@ class Game(Download, FirstLevelCreator):
             display_width, display_height)
 
         super().__init__(self.display_size)
-        self.change_images_size()
 
         FirstLevelCreator.__init__(
             self, self.display_size, self.add_to_group, self.get_amount_objects)
@@ -255,9 +262,9 @@ class Game(Download, FirstLevelCreator):
 
         self.Toolbar = Toolbar(
             self.interface['toolbar'], self.AMO, int(self.display_width//2), 1220)
-        self.PauseMenu = PauseMenu(self.interface['menu2'], self.interface['buttons'], self.display_size,
+        self.PauseMenu = PauseMenu(self.interface, self.display_size,
                                    exit_=self.exit_game, continue_=self.show_menu, settings_=self.settings, restart_=self.restart)
-        self.DiedMenu = DiedMune(self.interface['menu2'], self.interface['buttons'], self.display_size,
+        self.DiedMenu = DiedMune(self.interface,  self.display_size,
                                  restart_=self.restart, settings_=self.settings, exit_=self.exit_game)
 
         pygame.time.set_timer(pygame.USEREVENT, 1000)
@@ -358,6 +365,9 @@ class Game(Download, FirstLevelCreator):
 
         if not key[pygame.K_d] and not key[pygame.K_a]:
             self.player.acting_images = self.player.images['default']
+
+        if key[pygame.K_q]:
+            self.player.changeSkinPack('red')
 
 
 # -------------------------------------------ИГРОВЫЕ МЕХАННИКИ-----------------------------------------------

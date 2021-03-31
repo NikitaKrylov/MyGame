@@ -4,8 +4,6 @@ import os
 import random
 
 
-
-
 class AbstractSpawner:
     def __init__(self, images: list, display_size: list, add_function, get_amount):
         self.images = images
@@ -141,16 +139,16 @@ class FirstLevelCreator(AbstractLevelCreator, AsteroidSpawner, FirstEnemySpawner
             'default': [pygame.image.load(path+'\\img\\Enemy\\FirstEnemy\\1Enemy' + str(i)+'.png').convert_alpha() for i in range(1, 3)],
             'burst': [pygame.image.load(path+'\\img\\Enemy\\FirstEnemy\\burst\\1Enemy' + str(i)+'.png').convert_alpha() for i in range(1, 10)],
             'shell': {
-                'default': pygame.image.load(path+'\\img\\Enemy\\FirstEnemy\\Shell\\RedShell.png').convert_alpha(),
-                'burst': [pygame.image.load(path+'\\img\\Enemy\\FirstEnemy\\Shell\\RedShell'+str(i)+'.png').convert_alpha() for i in range(1, 4)]
+                'default': pygame.image.load(path+'\\img\\shells\\red\\redshell.png').convert_alpha(),
+                'burst': [pygame.image.load(path+'\\img\\shells\\red\\redshell'+str(i)+'.png').convert_alpha() for i in range(1, 5)]
             }
         }
         }
         drop = {
-            'health' : pygame.image.load(os.getcwd()+r'\img\interface\heart2.png').convert_alpha(),
-            'manapoint' : pygame.image.load(os.getcwd()+r'\img\spaceship\mana.png').convert_alpha()
+            'health': pygame.image.load(os.getcwd()+r'\img\interface\heart2.png').convert_alpha(),
+            'manapoint': pygame.image.load(os.getcwd()+r'\img\spaceship\mana.png').convert_alpha()
         }
-        
+
         enemy['asteroid']['drop'] = drop
         enemy['flightenemy']['drop'] = drop
 
