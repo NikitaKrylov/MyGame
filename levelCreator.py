@@ -139,6 +139,7 @@ class FirstLevelCreator(AbstractLevelCreator, AsteroidSpawner, FirstEnemySpawner
             'default': [pygame.image.load(path+'\\img\\Enemy\\FirstEnemy\\1Enemy' + str(i)+'.png').convert_alpha() for i in range(1, 3)],
             'burst': [pygame.image.load(path+'\\img\\Enemy\\FirstEnemy\\burst\\1Enemy' + str(i)+'.png').convert_alpha() for i in range(1, 10)],
             'shell': {
+                'icon' : pygame.image.load(path+'\\img\\shells\\red\\icon.png').convert_alpha(),
                 'default': pygame.image.load(path+'\\img\\shells\\red\\redshell.png').convert_alpha(),
                 'burst': [pygame.image.load(path+'\\img\\shells\\red\\redshell'+str(i)+'.png').convert_alpha() for i in range(1, 5)]
             }

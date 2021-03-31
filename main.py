@@ -5,7 +5,7 @@ import sys
 from levelCreator import FirstLevelCreator
 from Enemy import *
 from Player import Player, Heart
-from Shells import LiteShell, Shell, Bullet
+from Shells import LiteShell, Shell, Bullet, Orange
 from items import HeartItem, AbstractItem
 from scaler import Scale
 import ctypes
@@ -18,12 +18,19 @@ class Download:  # загрузка основных компонентов иг
         self.path = os.getcwd()
         self.AMO = {
             'lastlite': {
+                'icon': pygame.image.load(self.path+f'\img\shells\lastlite\icon.png').convert_alpha(),
                 'default': pygame.image.load(self.path+f'\img\shells\lastlite\lite.png').convert_alpha(),
                 'burst': [pygame.image.load(self.path+f'\img\shells\lastlite\lite' + str(i) + '.png').convert_alpha() for i in range(1, 5)]
             },
             'lite': {
+                'icon': pygame.image.load(self.path+f'\img\shells\lite\icon.png').convert_alpha(),
                 'default': pygame.image.load(self.path+f'\img\shells\lite\shell.png').convert_alpha(),
                 'burst': [pygame.image.load(self.path+f'\img\shells\lite\shell' + str(i) + '.png').convert_alpha() for i in range(1, 5)]
+            },
+            'orange': {
+                'icon': pygame.image.load(self.path+f'\img\shells\orange\icon.png').convert_alpha(),
+                'default':  pygame.image.load(self.path+f'\img\shells\orange\orange.png').convert_alpha(),
+                'burst': [pygame.image.load(self.path+f'\img\shells\orange\orange.png').convert_alpha()]
             }
         }
         self.interface = {
@@ -186,7 +193,7 @@ class Toolbar:
         self.shells_image = {}
 
         for name, image in shells_image.items():
-            image = image['default']
+            image = image['icon']
             size = (image.get_width(), image.get_height())
             change_index = self.tb_rect.height * 0.6//size[1]
             image = Scale()._image(image, change_index)
@@ -198,22 +205,24 @@ class Toolbar:
         self.number_list = {i+49: i for i in range(0, len(self.tb_images))}
 
         self.objects = {0: [LiteShell, self.shells_image['lite']],
-                        1: [Bullet, self.shells_image['lastlite']]}
+                        1: [Bullet, self.shells_image['lastlite']],
+                        2: [Orange, self.shells_image['orange']]
+                        }
         self.iteral = 0
 
     def scroll(self, command):  # переключение элементов тулбара
         if command == 5:
-            if self.iteral + 1 <= len(self.objects)-1:
+            if self.iteral + 1 <= len(self.objects)-1:  # прокрутка вправо
                 self.iteral += 1
             else:
                 self.iteral = 0
-        elif command == 4:
+        elif command == 4:  # прокрутка влево
             if self.iteral - 1 >= 0:
                 self.iteral -= 1
             else:
                 self.iteral = len(self.objects)-1
 
-        elif command in self.number_list:
+        elif command in self.number_list:  # переключение по цифрам
             if self.number_list[command] > len(self.objects)-1:
                 pass
             else:
@@ -222,7 +231,7 @@ class Toolbar:
     def draw(self, display):
         display.blit(self.tb_images[self.iteral], self.tb_rect)
 
-        for num, list in self.objects.items():
+        for num, list in self.objects.items():  # прорисовывает ТОЛЬКО объекты в списке элементов #NOT NONE!
             display.blit(list[1], (self.position_list[num][0]+self.tb_rect.width//7//2-list[1].get_width()//2,
                                    self.position_list[num][1]+self.tb_rect.height//4))
 
@@ -341,7 +350,6 @@ class Game(Download, FirstLevelCreator):
 
 # --------------------------------------ОБРАБОТЧИК ЗАЖАТЫХ КЛАВИШЬ-----------------------------------------------
 
-
     def keyHandler(self, key):  # обрабатывает зажатые клавишиd
         if True not in key:
             self.player.speed['accel'] = 2
@@ -371,7 +379,6 @@ class Game(Download, FirstLevelCreator):
 
 
 # -------------------------------------------ИГРОВЫЕ МЕХАННИКИ-----------------------------------------------
-
 
     def collide_screen(self):  # проверка вышли ли элементы за предел экрана\
         for element in self.get_all_objects:

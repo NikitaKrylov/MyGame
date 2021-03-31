@@ -24,7 +24,7 @@ class Mana:
 
         for i in self.circleValues[:int(self.AMOUNT*self.step)]:
             pygame.draw.circle(
-                display, (0, 180, 255), (i, self.rect.centery), self.rect.height//2-self.padding//3)
+                display, (71, 204, 221), (i, self.rect.centery), self.rect.height//2-self.padding//3)
 
     def toSpend(self, value):
         if self.AMOUNT - value >= 0:
@@ -124,13 +124,13 @@ class Player(pygame.sprite.Sprite,  HeartsGroup, Mana):
                 'left_move': [pygame.image.load(path+r'\img\spaceship\purpleship\left'+str(i)+'.png') for i in range(1, 3)],
                 'right_move': [pygame.image.load(path+r'\img\spaceship\purpleship\right'+str(i)+'.png') for i in range(1, 3)],
                 'default': [pygame.image.load(path+r'\img\spaceship\purpleship\space'+str(i)+'.png') for i in range(1, 3)],
-                'color' : 'purple'
+                'color': 'purple'
             },
             'red': {
                 'left_move': [pygame.image.load(path+r'\img\spaceship\redship\left'+str(i)+'.png') for i in range(1, 3)],
                 'right_move': [pygame.image.load(path+r'\img\spaceship\redship\right'+str(i)+'.png') for i in range(1, 3)],
                 'default': [pygame.image.load(path+r'\img\spaceship\redship\space'+str(i)+'.png') for i in range(1, 3)],
-                'color' : 'red'
+                'color': 'red'
             }
         }
         self.images = self.skins['purple']
@@ -160,14 +160,13 @@ class Player(pygame.sprite.Sprite,  HeartsGroup, Mana):
     def draw(self, display):
         display.blit(self.acting_images[self.flowAnimator.getIteral],
                      (self.rect.x, self.rect.y))
-        for r in self.hitted_rects:
-            pygame.draw.rect(display, (255, 0, 0), r, 1)
 
     def Strike(self, now, object, image, func):
-        if now - self.last_strike > object.cooldawn:
-            if self.Stamina.toSpend(object.stm):
-                func(object(image, self.rect), ('all', 'player'))
-                self.last_strike = now
+        if object:
+            if now - self.last_strike > object.cooldawn:
+                if self.Stamina.toSpend(object.stm):
+                    func(object(image, self.rect), ('all', 'player'))
+                    self.last_strike = now
 
     def hit(self, damage):
         self.XP -= damage
@@ -191,5 +190,5 @@ class Player(pygame.sprite.Sprite,  HeartsGroup, Mana):
 
     def changeSkinPack(self, pack_name):
         self.images = self.skins[pack_name]
-        self.rect = pygame.Rect(self.rect.x, self.rect.y, self.images['default'][0].get_width(), self.images['default'][0].get_height())
-        
+        self.rect = pygame.Rect(self.rect.x, self.rect.y, self.images['default'][0].get_width(
+        ), self.images['default'][0].get_height())
