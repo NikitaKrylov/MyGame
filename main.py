@@ -1,5 +1,6 @@
 import pygame
 import random
+import numpy as np
 import os
 import sys
 from levelCreator import FirstLevelCreator
@@ -187,27 +188,39 @@ class Score:
 
 
 class Toolbar:
-    def __init__(self, images, shells_image, x, y):
-        self.tb_images = images
-        self.tb_rect = self.tb_images[1].get_rect(center=(x, y))
+    def __init__(self, images, shells_image, centerx, y):
+        self.selector_image = pygame.image.load(
+            os.getcwd()+r'\img\interface\nav.png').convert_alpha()
+        self.selector_size = (self.selector_image.get_width(),
+                              self.selector_image.get_height())
+        self.hover_image = pygame.image.load(
+            os.getcwd()+r'\img\interface\navigate2.png').convert_alpha()
+
         self.shells_image = {}
+        self.tools_list = []
+
+        for i in range(centerx-(self.selector_size[0]*1), centerx+(self.selector_size[0]*5), self.selector_size[0]):
+            self.tools_list.append(pygame.Rect(
+                i, y, self.selector_size[0], self.selector_size[1]))
+
+        self.tools_list.append(pygame.Rect(
+            centerx-(self.selector_size[0]*3), y, self.selector_size[0], self.selector_size[1]))
 
         for name, image in shells_image.items():
             image = image['icon']
-            size = (image.get_width(), image.get_height())
-            change_index = self.tb_rect.height * 0.6//size[1]
-            image = Scale()._image(image, change_index)
+            change_index = self.tools_list[0].height*0.6/image.get_height()
+            image = pygame.transform.scale(image, (round(
+                image.get_width()*change_index), round(image.get_height()*change_index)))
             self.shells_image.update({name: image})
 
-        self.position_list = [(i+2, self.tb_rect.y-2) for i in range((self.tb_rect.width//7)
-                                                                     * 2+self.tb_rect.x, self.tb_rect.x+self.tb_rect.width, self.tb_rect.width//7)]
-
-        self.number_list = {i+49: i for i in range(0, len(self.tb_images))}
-
+        # чтобы добавить элемент в тулбар
+        # его нужно внести в список
         self.objects = {0: [LiteShell, self.shells_image['lite']],
                         1: [Bullet, self.shells_image['lastlite']],
                         2: [Orange, self.shells_image['orange']]
                         }
+
+        self.number_list = {i+49: i for i in range(0, len(self.objects))}
         self.iteral = 0
 
     def scroll(self, command):  # переключение элементов тулбара
@@ -229,11 +242,17 @@ class Toolbar:
                 self.iteral = self.number_list[command]
 
     def draw(self, display):
-        display.blit(self.tb_images[self.iteral], self.tb_rect)
+        for rect in self.tools_list:
+            display.blit(self.selector_image, rect)
 
-        for num, list in self.objects.items():  # прорисовывает ТОЛЬКО объекты в списке элементов #NOT NONE!
-            display.blit(list[1], (self.position_list[num][0]+self.tb_rect.width//7//2-list[1].get_width()//2,
-                                   self.position_list[num][1]+self.tb_rect.height//4))
+        for i, _list in self.objects.items():
+            display.blit(_list[1], (self.tools_list[i].centerx+2-_list[1].get_width()//2,
+                                    self.tools_list[i].centery-_list[1].get_height()//2))
+
+        display.blit(self.hover_image, self.tools_list[self.iteral])
+
+    def add_object(self, object, icon_image):
+        pass
 
 
 class Game(Download, FirstLevelCreator):
@@ -270,7 +289,7 @@ class Game(Download, FirstLevelCreator):
         }
 
         self.Toolbar = Toolbar(
-            self.interface['toolbar'], self.AMO, int(self.display_width//2), 1220)
+            self.interface['toolbar'], self.AMO, int(self.display_width//2), self.display_height*0.9)
         self.PauseMenu = PauseMenu(self.interface, self.display_size,
                                    exit_=self.exit_game, continue_=self.show_menu, settings_=self.settings, restart_=self.restart)
         self.DiedMenu = DiedMune(self.interface,  self.display_size,
@@ -350,6 +369,7 @@ class Game(Download, FirstLevelCreator):
 
 # --------------------------------------ОБРАБОТЧИК ЗАЖАТЫХ КЛАВИШЬ-----------------------------------------------
 
+
     def keyHandler(self, key):  # обрабатывает зажатые клавишиd
         if True not in key:
             self.player.speed['accel'] = 2
@@ -375,10 +395,11 @@ class Game(Download, FirstLevelCreator):
             self.player.acting_images = self.player.images['default']
 
         if key[pygame.K_q]:
-            self.player.changeSkinPack('red')
+            self.player.changeSkinPack(self.get_game_time)
 
 
 # -------------------------------------------ИГРОВЫЕ МЕХАННИКИ-----------------------------------------------
+
 
     def collide_screen(self):  # проверка вышли ли элементы за предел экрана\
         for element in self.get_all_objects:
@@ -395,15 +416,16 @@ class Game(Download, FirstLevelCreator):
                     # проверка коллизии со снарядом
                     if not isinstance(element, Shell):
                         for shell in self.get_player:
-                            if shell.rect.colliderect(hitted_rect):
-                                if not element.run_burst and not shell.run_burst:
-                                    element.XP -= shell.DAMAGE
-                                    shell.run_burst = True
+                            for shells_rect in shell.hitted_rects:
+                                if shells_rect.colliderect(hitted_rect):
+                                    if not element.run_burst and not shell.run_burst:
+                                        element.XP -= shell.DAMAGE
+                                        shell.run_burst = True
 
-                                    if element.XP <= 0:
-                                        self.updateKillList(str(element))
-                                        element.run_burst = True
-                                        self.Score.update_score(element.EXP)
+                                        if element.XP <= 0:
+                                            self.updateKillList(str(element))
+                                            element.run_burst = True
+                                            self.Score.update_score(element.EXP)
 
                     # проверка коллизии с игроком
                     for player_rect in self.player.hitted_rects:
@@ -491,11 +513,6 @@ class Game(Download, FirstLevelCreator):
 
                 elif event.type == pygame.USEREVENT:
                     self.updateCooldawn()
-
-                elif event.type == pygame.VIDEORESIZE:
-                    self.display_size = self.display_width, self.display_height = event.size
-                    self.Toolbar.__init__(self.interface['toolbar'], self.AMO, int(
-                        self.display_width//2), self.display_height-self.interface['toolbar'][0].get_height())
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:

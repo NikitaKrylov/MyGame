@@ -147,6 +147,7 @@ class FirstEnemy(FlyingEnemy):
 
             pygame.draw.rect(display, (200, 0, 0), (self.rect.left, self.rect.top -
                                                     self.display_size[1] % 10, int(self.rect.width/100*p), int(self.rect.height*0.07)))
+            
 
     def Strike(self, now):
         if not self.run_burst:

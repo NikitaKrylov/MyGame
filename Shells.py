@@ -27,11 +27,7 @@ class Shell(pygame.sprite.Sprite, Animator):  # общий класс для п�
                 self.burst_list[self.burstAnimator.getIteral], self.rect)
         else:
             display.blit(self.image, self.rect)
-            pygame.draw.rect(display, (0, 255, 0), self.rect, 1)
-            pygame.draw.rect(display, (255, 0, 0), self.icon_rect, 1)
-
-            #pygame.draw.rect(display, (255, 0, 0), self.hitted_rects[0], 1)
-
+            
     def update(self, now):
         self.rect.y -= self.speed
 
@@ -43,7 +39,7 @@ class Shell(pygame.sprite.Sprite, Animator):  # общий класс для п�
                 center=(self.rect.center))
         else:
             self.burstAnimator.change_time(now)
-        
+
         self.icon_rect.center = self.rect.center
         self.hitted_rects[0] = self.icon_rect
 

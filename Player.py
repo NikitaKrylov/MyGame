@@ -3,13 +3,15 @@ import os
 from scaler import Scale
 from animation import Animator
 import numpy as np
+from time import sleep
+import asyncio
 
 
 class Mana:
     def __init__(self, display_size):
         self.display_size = display_size
         self.image = pygame.image.load(
-            os.getcwd()+f'\img\interface\Stamina.png').convert_alpha()
+            os.getcwd()+f'\img\interface\Stamina3.png').convert_alpha()
         self.rect = self.image.get_rect(topleft=(display_size[0]//2, 15))
         self.padding = round(self.rect.width*0.05)
         self.circleValues = np.arange(
@@ -133,6 +135,7 @@ class Player(pygame.sprite.Sprite,  HeartsGroup, Mana):
                 'color': 'red'
             }
         }
+
         self.images = self.skins['purple']
         self.acting_images = self.images['default']
 
@@ -147,6 +150,7 @@ class Player(pygame.sprite.Sprite,  HeartsGroup, Mana):
                                          65, self.rect.right - self.rect.left-22, 45)
                              ]
         self.last_strike = 0
+        self.last_skinChanging = 0
 
     def update(self, now, tick=80):
         self.hitted_rects = [pygame.Rect(self.rect.centerx - self.rect.width*.2//2, self.rect.top, self.rect.width*0.2, self.rect.bottom - self.rect.top-self.rect.height*0.1),
@@ -188,7 +192,20 @@ class Player(pygame.sprite.Sprite,  HeartsGroup, Mana):
             self.XP += amount
             super().heal(self.XP, amount)
 
-    def changeSkinPack(self, pack_name):
-        self.images = self.skins[pack_name]
-        self.rect = pygame.Rect(self.rect.x, self.rect.y, self.images['default'][0].get_width(
-        ), self.images['default'][0].get_height())
+    def changeSkinPack(self, now):
+        if now - self.last_skinChanging > 250:
+            a = list(self.skins.keys())
+            index = a.index(self.images['color'])
+
+            if index + 1 < len(a):
+                pack_name = a[index+1]
+            else:
+                pack_name = a[0]
+
+            self.images = self.skins[pack_name]
+            self.rect = pygame.Rect(self.rect.x, self.rect.y, self.images['default'][0].get_width(
+            ), self.images['default'][0].get_height())
+
+            self.last_skinChanging = now
+            
+
