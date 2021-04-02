@@ -209,8 +209,7 @@ class Toolbar:
         for name, image in shells_image.items():
             image = image['icon']
             change_index = self.tools_list[0].height*0.6/image.get_height()
-            image = pygame.transform.scale(image, (round(
-                image.get_width()*change_index), round(image.get_height()*change_index)))
+            image = Scale()._image(image, change_index)
             self.shells_image.update({name: image})
 
         # чтобы добавить элемент в тулбар
