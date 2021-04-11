@@ -133,7 +133,14 @@ class Player(pygame.sprite.Sprite,  HeartsGroup, Mana):
                 'right_move': [pygame.image.load(path+r'\img\spaceship\redship\right'+str(i)+'.png') for i in range(1, 3)],
                 'default': [pygame.image.load(path+r'\img\spaceship\redship\space'+str(i)+'.png') for i in range(1, 3)],
                 'color': 'red'
+            },
+            'dark' : {
+                'left_move': [pygame.image.load(path+r'\img\spaceship\dark\left'+str(i)+'.png') for i in range(1, 3)],
+                'right_move': [pygame.image.load(path+r'\img\spaceship\dark\right'+str(i)+'.png') for i in range(1, 3)],
+                'default': [pygame.image.load(path+r'\img\spaceship\dark\space'+str(i)+'.png') for i in range(1, 3)],
+                'color': 'dark'
             }
+
         }
 
         self.images = self.skins['purple']
